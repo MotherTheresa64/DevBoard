@@ -25,28 +25,27 @@ const JobForm = () => {
     }
 
     try {
-      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(linkedinUrl)}`;
-      const res = await fetch(proxyUrl);
+      const res = await fetch(
+        `https://devboard-gg8t.onrender.com/scrapeLinkedIn?url=${encodeURIComponent(linkedinUrl)}`
+      );
       const data = await res.json();
-      const html = data.contents;
 
-      const titleMatch = html.match(/<h1[^>]*>(.*?)<\/h1>/);
-      const companyMatch = html.match(/"companyName":"(.*?)"/);
+      if (data.error) {
+        toast.error(data.error);
+        return;
+      }
 
-      const jobTitle = titleMatch ? titleMatch[1] : "";
-      const companyName = companyMatch ? companyMatch[1] : "";
+      if (data.title) setPosition(data.title);
+      if (data.company) setCompany(data.company);
 
-      if (jobTitle) setPosition(jobTitle);
-      if (companyName) setCompany(companyName);
-
-      if (jobTitle || companyName) {
+      if (data.title || data.company) {
         toast.success("Job info loaded from LinkedIn!");
       } else {
         toast.warning("Couldn't auto-fill. Please enter manually.");
       }
     } catch (err) {
       console.error("Scraping failed:", err);
-      toast.error("Failed to scrape LinkedIn job.");
+      toast.error("Failed to scrape LinkedIn job post.");
     }
   };
 
@@ -78,7 +77,9 @@ const JobForm = () => {
       <h2 className="text-2xl font-bold mb-4">Add New Job</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium">LinkedIn Job URL (optional)</label>
+          <label className="block text-sm font-medium">
+            LinkedIn Job URL (optional)
+          </label>
           <div className="flex gap-2 mt-1">
             <input
               type="url"
